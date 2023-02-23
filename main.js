@@ -13,6 +13,7 @@ var express = require('express');
 const { MongoClient } = require('mongodb');
 const fs = require('fs');
 var path = require("path");
+require('dotenv').config();
 
 
 
@@ -35,7 +36,8 @@ async function main() {
      * See https://docs.mongodb.com/ecosystem/drivers/node/ for more details
    */
 
-    const uri = "mongodb+srv://admin:Lisk399a39!1@formulafinder.kvaq0zi.mongodb.net/?retryWrites=true&w=majority";
+    
+    const uri = "mongodb+srv://"+process.env.NAME+":"+process.env.PASS+"@formulafinder.kvaq0zi.mongodb.net/?retryWrites=true&w=majority";
 
 
     const client = new MongoClient(uri);
@@ -55,6 +57,8 @@ async function main() {
         //await hello.likeItem(client, userdata, itemdata);
         //await hello.dislikeItem(client, userdata, itemdata);
         //let testGuy = await hello.login(client, loginData);
+
+        
 
         let testData = await hello.getData(client);
 
