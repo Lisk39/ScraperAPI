@@ -1,0 +1,25 @@
+Get http://localhost:8080/users
+
+###
+
+Get http://localhost:8080/users/email
+Content-Type: application/json
+
+{
+    "Email": "johndoe2@gmail.com"
+}
+
+###
+
+Get http://localhost:8080/users/password
+Content-Type: application/json
+
+{
+    "Email": "johndoe2@gmail.com",
+    "Password":  "986864656588"
+}
+
+###
+
+Get http://localhost:8080/users/logout
+

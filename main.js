@@ -7,10 +7,13 @@ http.createServer(function (req, res) {
     res.end();
 }).listen(8080);*/
 
-var hello = require('./gateway');
+var dbAPI = require('./DBAPI/db.js');
+
+var gateway = require('./APILibrary/gateway');
 
 var express = require('express');
-const { MongoClient } = require('mongodb');
+const session = require('express-session');
+const MongoDBSession = require('connect-mongodb-session')(session);
 const fs = require('fs');
 var path = require("path");
 require('dotenv').config();
@@ -21,10 +24,12 @@ require('dotenv').config();
 var app = express();
 
 
-let ScraperDataRaw = fs.readFileSync((path.resolve(__dirname, 'ratingstest2.json')));
-let Userdataraw = fs.readFileSync((path.resolve(__dirname, 'TestUser2.json')));
-let itemdataRaw = fs.readFileSync((path.resolve(__dirname, 'iteminfo.json')));
-let loginRaw = fs.readFileSync((path.resolve(__dirname, 'login.json')));
+
+
+let ScraperDataRaw = fs.readFileSync((path.resolve('./TestData', 'ratingstest2.json')));
+let Userdataraw = fs.readFileSync((path.resolve('./TestData', 'TestUser2.json')));
+let itemdataRaw = fs.readFileSync((path.resolve('./TestData', 'iteminfo.json')));
+let loginRaw = fs.readFileSync((path.resolve('./TestData', 'login.json')));
 let scraperdata = JSON.parse(ScraperDataRaw);
 let userdata = JSON.parse(Userdataraw);
 let itemdata = JSON.parse(itemdataRaw);
@@ -37,45 +42,82 @@ async function main() {
    */
 
     
-    const uri = "mongodb+srv://"+process.env.NAME+":"+process.env.PASS+"@formulafinder.kvaq0zi.mongodb.net/?retryWrites=true&w=majority";
 
+    const Mongouri = dbAPI.url;
 
-    const client = new MongoClient(uri);
+    //var client = dbAPI.client;
+   
 
+   
     
-
+   
     try {
-        // Connect to the MongoDB cluster
-        await client.connect();
-
-        // Make the appropriate DB calls
-        //await hello.list(client);
         
-        //await hello.addDataScrap(client, scraperdata);
-        
-        //await hello.addUser(client, userdata);
-        //await hello.likeItem(client, userdata, itemdata);
-        //await hello.dislikeItem(client, userdata, itemdata);
-        //let testGuy = await hello.login(client, loginData);
-
         
 
-        let testData = await hello.getData(client);
 
-        app.get('/', function (req, res) {
-       
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify(testData, null, 3));
-            
+
+
+        
+        const store = new MongoDBSession({
+            uri: Mongouri,
+            databaseName: 'Sessions',
+            collection: "Sessions",
+
         });
+    
+        app.use(session(
+            {
+                secret: 'key that will sign cookie',
+                resave: false,
+                saveUninitialized: false,
+                store: store,
+            }
+            ));
+
+
+
+        app.use(express.json())
+
+        // setup products endpoint/route
+        const userRouter = require('./routes/users')
+        app.use('/users', userRouter)
+
         app.listen(8080);
         console.log("listening on port 8080");
+        // Make the appropriate DB calls
+        //await gateway.list(client);
+        
 
+        //await gateway.addDataScrap(client, scraperdata);
+        
+        //await gateway.addUser(client, userdata);
+        //await gateway.likeItem(client, userdata, itemdata);
+        //await gateway.dislikeItem(client, userdata, itemdata);
+        //let testGuy = await gateway.verifyEmail(client, loginData);
+
+        
+
+        //let testData = await gateway.getData(client);
+/*
+        app.get('/', function (req, res) {
+       
+            //console.log(req.session);
+            //req.session.isAuth = true;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(testGuy, null, 3));
+            
+        });
+        
+*/
     } catch (e) {
         console.error(e);
-    } finally {
-        await client.close();
-    }
+    } 
+    
+    /*finally {
+        dbAPI.close();
+    }*/
+    
 }
 
 main().catch(console.error);

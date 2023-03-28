@@ -1,6 +1,6 @@
 
 
-var user = require('./user');
+var user = require('./userAPI');
 module.exports = 
 {
 
@@ -121,12 +121,18 @@ addUser: async function add_user(client, userData)
     
 },
 
-//links to login function in login.js
-login: async function login(client, login)
-    {
-        return user.login(client, login);
+//links to verifyPassword function in login.js
+verifyPass: async function verifyPass(client, login)
+{
+        return user.verifyPass(client, login);
 
-    },
+},
+//links to verifyEmail function in login.js
+verifyEmail: async function ver(client, login)
+{
+        return user.verifyEmail(client, login);
+
+},
 
 // function for when an item is liked or conversely unliked
 likeItem: async function item_liked(client, userData, itemData) {
