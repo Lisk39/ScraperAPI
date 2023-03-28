@@ -19,12 +19,12 @@ module.exports =
 
         const collection = await DB.collection('Users'); // or DB.createCollection(nameOfCollection);
 
-        const userNameExists = await collection.countDocuments({ UserName: userData.UserName }); // check if uname taken
+        const emailExists = await collection.countDocuments({ Email: userData.Email }); // check if uname taken
 
         
         
         //uname is not taken
-        if (userNameExists == 0) { 
+        if (emailExists == 0) { 
             //add permissions field
             userData.Permission = "User";
             //add liked items field
@@ -39,7 +39,7 @@ module.exports =
         }
         //uname taken
         else {
-            throw new Error("Username taken")
+            throw new Error("Email taken");
         }
     
     
@@ -111,13 +111,16 @@ module.exports =
 
         const collection = await DB.collection('Users'); // or DB.createCollection(nameOfCollection);
         var emailExists;
+        
         try{
          emailExists = await collection.countDocuments({ Email: login.Email }); //Check if email is in DB
         }
         catch(err){
             throw new Error(err.message);
         }
+
         var returnJson = new Object();
+
         //if Email found
         if (emailExists != 0) {
             

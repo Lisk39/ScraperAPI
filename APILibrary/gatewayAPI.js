@@ -103,9 +103,19 @@ addDataScrap: async function addDataScraper(client, data) {
 
 
     }
-
-    await collection.insert(data);
-    
+    try{
+        await collection.insert(data);
+        var returnJson = new Object();
+         
+        returnJson.addedData = true;
+            
+            
+        return returnJson;
+    }
+    catch(err)
+    {
+        throw  new Error(err);
+    }
     
 },
 
@@ -128,7 +138,7 @@ verifyPass: async function verifyPass(client, login)
 
 },
 //links to verifyEmail function in login.js
-verifyEmail: async function ver(client, login)
+verifyEmail: async function verifyEmail(client, login)
 {
         return user.verifyEmail(client, login);
 
@@ -141,13 +151,13 @@ likeItem: async function item_liked(client, userData, itemData) {
     /*
         Userdata in this format 
         {
-            "UserName": "Bruhseph"
+            "Email": "johndoe2@gmail.com"
         }
 
         itemData in this format
         {
             "Company": "Target",
-            "Product_id": "0",
+            "Product_id": "160",
             "Store_id": 2845,
             "Availability": "IN_STOCK",
             "Dislikes": "0",
@@ -179,7 +189,7 @@ likeItem: async function item_liked(client, userData, itemData) {
     //get user profile
     const user =  await collection.findOne(
 
-        { UserName: userData.UserName }
+        { Email: userData.Email }
 
 
     );
@@ -347,7 +357,7 @@ dislikeItem:  async function item_disliked(client, userData, itemData) {
     /*
         Userdata in this format 
         {
-            "UserName": "Bruhseph"
+            "Email": "johndoe2@gmail.com"
         }
 
         itemData in this format
@@ -381,7 +391,7 @@ dislikeItem:  async function item_disliked(client, userData, itemData) {
     //get user profile
     const user =  await collection.findOne(
 
-        { UserName: userData.UserName }
+        { Email: userData.Email }
 
 
     );

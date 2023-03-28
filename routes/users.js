@@ -7,9 +7,9 @@ var userMethods = require('../APILibrary/userAPI');
 
 var client = dbAPI.client;
 
-/* GET users email check */
+/* GET users default */
 router.get('/', function(req, res, next) {
-  res.send('Hello World');
+  res.send('Hello World User');
 });
 
 
@@ -18,9 +18,9 @@ router.get('/email', async function(req, res, next) {
   const email = req.body;
   
   try{
-    let user = await userMethods.verifyEmail(client, email);
+    let found = await userMethods.verifyEmail(client, email);
     
-    res.json(user);
+    res.json(found);
   }
   catch(err){
     res.status(400).json({message: err.message});
@@ -29,22 +29,23 @@ router.get('/email', async function(req, res, next) {
 
 
 });
-/* GET users email check */
+/* GET users password check */
 router.get('/password', async function(req, res, next) {
-  const email = req.body;
+  const password = req.body;
   
   try{
-    let user = await userMethods.verifyPass(client, email);
+    let user = await userMethods.verifyPass(client, password);
     req.session.isAuth = true;
     res.json(user);
   }
   catch(err){
     res.status(400).json({message: err.message});
   }
-  
 
 
 });
+
+/* GET users logout*/
 router.get('/logout', async function(req, res, next) {
   
   
@@ -61,8 +62,22 @@ router.get('/logout', async function(req, res, next) {
 
 })
   
+});
 
-
+/* POST create user */
+router.post('/adduser', async function(req, res, next) {
+  
+ const userData = req.body;
+  
+  try{
+    let user = await userMethods.addUser(client, userData);
+    req.session.isAuth = true;
+    res.json(user);
+  }
+  catch(err){
+    res.status(400).json({message: err.message});
+  }
+  
 });
 
 module.exports = router;

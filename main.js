@@ -9,7 +9,7 @@ http.createServer(function (req, res) {
 
 var dbAPI = require('./DBAPI/db.js');
 
-var gateway = require('./APILibrary/gateway');
+//var gateway = require('./APILibrary/gatewayAPI');
 
 var express = require('express');
 const session = require('express-session');
@@ -54,11 +54,6 @@ async function main() {
     try {
         
         
-
-
-
-
-        
         const store = new MongoDBSession({
             uri: Mongouri,
             databaseName: 'Sessions',
@@ -83,21 +78,24 @@ async function main() {
         const userRouter = require('./routes/users')
         app.use('/users', userRouter)
 
+        const gatewayRouter = require('./routes/gateway')
+        app.use('/gateway', gatewayRouter)
+
         app.listen(8080);
         console.log("listening on port 8080");
-        // Make the appropriate DB calls
-        //await gateway.list(client);
+
         
 
+        // Tests for the API functions
+
+
+        //await gateway.list(client);
         //await gateway.addDataScrap(client, scraperdata);
-        
         //await gateway.addUser(client, userdata);
         //await gateway.likeItem(client, userdata, itemdata);
         //await gateway.dislikeItem(client, userdata, itemdata);
+
         //let testGuy = await gateway.verifyEmail(client, loginData);
-
-        
-
         //let testData = await gateway.getData(client);
 /*
         app.get('/', function (req, res) {
