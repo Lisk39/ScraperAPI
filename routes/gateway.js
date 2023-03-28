@@ -45,6 +45,7 @@ router.post('/adddata', async function(req, res, next) {
      
    });
 /* PATCH item Liked */
+/* Jsons user and item need to be collected in to an array in one json which is passed to this API*/
 router.patch('/itemliked', async function(req, res, next) {
   
     const user = req.body[0];
@@ -62,6 +63,7 @@ router.patch('/itemliked', async function(req, res, next) {
      
    });
 /* PATCH item DisLiked */
+/* Jsons user and item need to be collected in to an array in one json which is passed to this API*/
 router.patch('/itemdisliked', async function(req, res, next) {
   
     const user = req.body[0];
