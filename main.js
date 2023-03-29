@@ -8,9 +8,7 @@ http.createServer(function (req, res) {
 }).listen(8080);*/
 
 var dbAPI = require('./DBAPI/db.js');
-
-//var gateway = require('./APILibrary/gatewayAPI');
-
+var gateway = require('./APILibrary/gatewayAPI');
 var express = require('express');
 const session = require('express-session');
 const MongoDBSession = require('connect-mongodb-session')(session);
@@ -24,8 +22,8 @@ require('dotenv').config();
 var app = express();
 
 
-
-
+//used for testing the API functions
+/*
 let ScraperDataRaw = fs.readFileSync((path.resolve('./TestData', 'ratingstest2.json')));
 let Userdataraw = fs.readFileSync((path.resolve('./TestData', 'TestUser2.json')));
 let itemdataRaw = fs.readFileSync((path.resolve('./TestData', 'iteminfo.json')));
@@ -34,26 +32,18 @@ let scraperdata = JSON.parse(ScraperDataRaw);
 let userdata = JSON.parse(Userdataraw);
 let itemdata = JSON.parse(itemdataRaw);
 let loginData = JSON.parse(loginRaw);
+*/
 
 async function main() {
-    /**
-     * Connection URI. Update <username>, <password>, and <your-cluster-url> to reflect your cluster.
-     * See https://docs.mongodb.com/ecosystem/drivers/node/ for more details
-   */
-
     
 
     const Mongouri = dbAPI.url;
 
-    //var client = dbAPI.client;
-   
-
-   
     
    
     try {
         
-        
+        //setting up session creation
         const store = new MongoDBSession({
             uri: Mongouri,
             databaseName: 'Sessions',
@@ -87,7 +77,7 @@ async function main() {
         
 
         // Tests for the API functions
-
+/*
 
         //await gateway.list(client);
         //await gateway.addDataScrap(client, scraperdata);
@@ -97,7 +87,7 @@ async function main() {
 
         //let testGuy = await gateway.verifyEmail(client, loginData);
         //let testData = await gateway.getData(client);
-/*
+
         app.get('/', function (req, res) {
        
             //console.log(req.session);
