@@ -45,6 +45,26 @@ router.get('/password', async function(req, res, next) {
 
 });
 
+/* GET confirmation if local user / browser is authenticated with valid session */
+router.get('/isAuthenticated', async function(req, res, next){
+  try{
+
+    if(req.session.isAuth === true) {
+      res.json({"isAuth": true})
+      
+    }
+    else{
+      res.json({"isAuth": false})
+    }
+  
+    
+  }
+  catch(err){
+    res.status(400).json({message: err.message});
+  }
+  
+})
+
 /* GET users logout*/
 router.get('/logout', async function(req, res, next) {
   

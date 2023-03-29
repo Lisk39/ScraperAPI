@@ -77,7 +77,7 @@ addDataScrap: async function addDataScraper(client, data) {
 
         
     }
-    //filter through list of store items and add the iemt to Ratings database if it is not already there
+    //filter through list of store items and add the item to Ratings database if it is not already there
     for (store in data.stores) {
 
         for (item in data.stores[store].Store_items) {
@@ -93,7 +93,7 @@ addDataScrap: async function addDataScraper(client, data) {
                         Product_id: thing.Product_id, Product_family: thing.Product_family, Product: thing.Product,
                         Price: thing.Price, Availability: thing.Availability, Store_id: thing.Store_id, Company: thing.Company,
                         Quantity: thing.Quantity, Product_url: thing.Product_url, Product_img_url: thing.Product_img_url,
-                        Likes: 0, Dislikes: 0, Rating: "Unrated"
+                        Liked: [], Disliked: [], Likes: 0, Dislikes: 0, Rating: "Unrated"
                     }
                 },
                 { upsert: true }
@@ -120,30 +120,6 @@ addDataScrap: async function addDataScraper(client, data) {
 },
 
 
-
-//links to addUser function in user.js
-addUser: async function add_user(client, userData)
-{
-   
-
-    return user.addUser(client, userData);
-    
-    
-},
-
-//links to verifyPassword function in login.js
-verifyPass: async function verifyPass(client, login)
-{
-        return user.verifyPass(client, login);
-
-},
-//links to verifyEmail function in login.js
-verifyEmail: async function verifyEmail(client, login)
-{
-        return user.verifyEmail(client, login);
-
-},
-
 // function for when an item is liked or conversely unliked
 likeItem: async function item_liked(client, userData, itemData) {
 
@@ -160,7 +136,9 @@ likeItem: async function item_liked(client, userData, itemData) {
             "Product_id": "160",
             "Store_id": 2845,
             "Availability": "IN_STOCK",
+            "Disliked": [],
             "Dislikes": "0",
+            "Liked": [],
             "Likes": "0",
             "Price": 25.99,
             "Product": "Bobbie Baby Organic Powder Infant Formula - 14oz",
@@ -177,47 +155,29 @@ likeItem: async function item_liked(client, userData, itemData) {
 
     */
 
-    const DB = client.db('Users');//connect to Users DB
-
-    const collection = await DB.collection('Users'); // or DB.createCollection(nameOfCollection); 
     
     const DB2 = client.db('Ratings');//connect to Ratings DB
 
-    const collection2 = await DB2.collection('Ratings'); // or DB.createCollection(nameOfCollection); 
+    const collection = await DB2.collection('Ratings'); // or DB.createCollection(nameOfCollection); 
 
 
-    //get user profile
-    const user =  await collection.findOne(
-
-        { Email: userData.Email }
-
-
-    );
     //get liked item ratings profile
-    let item = await collection2.findOne(
+    let item = await collection.findOne(
         { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id }
 
     );
-    //get liked array from user profile
-    const liked = user.Liked;
-    //get disliked array from user profile
-    const disliked = user.DisLiked;
+    //get liked array from item profile
+    const liked = item.Liked;
+    
+    //get disliked array from item profile
+    const disliked = item.Disliked;
         
-    //find if item that was liked is in liked array
-    const filtered = liked.filter(el => el.Product_id !== itemData.Product_id
-        && el.Company !== itemData.Company && el.Store_id !== itemData.Store_id);
+    //list of liked users without userData
+    const filtered = liked.filter(el => el.Email !== userData.Email);
+   
 
-
-    //item is in liked(was previously liked)
+    //user is in liked(was previously liked)
     if (filtered.length != liked.length) {
-        var myquery = { UserName: userData.UserName };
-        var newvalues = { $set: { Liked: filtered } };
-        //updated User liked array to have the item removed
-        
-        collection.updateOne(myquery, newvalues, function (err, res) {
-            if (err) throw err;
-
-        });
 
         //decrement likes in Rating DB
         item.Likes--;
@@ -235,48 +195,35 @@ likeItem: async function item_liked(client, userData, itemData) {
         }
         
         //update entry in Rating DB
-        var myquery2 = { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id };
-        var newvalues2 = { $set: { Likes: item.Likes, Rating: item.Rating } };
-        collection2.updateOne(myquery2, newvalues2, function (err, res) {
+        var myquery = { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id };
+        var newvalues = { $set: { Likes: item.Likes, Rating: item.Rating, Liked: filtered } };
+        collection.updateOne(myquery, newvalues, function (err, res) {
             if (err) throw err;
 
         });
-        //return user profile
-        const user =  await collection.findOne(
+        //return item profile
+        const itemReturn =  await collection.findOne(
 
-            { UserName: userData.UserName }
+            { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id  }
 
 
         );
-        return user;
+        return itemReturn;
     
     }
-    //item is not in liked array(not previously liked)
+    //user is not in liked array(not previously liked)
     else {
 
-        
-        const filteredDis = disliked.filter(el => el.Product_id !== itemData.Product_id
-            && el.Company !== itemData.Company && el.Store_id !== itemData.Store_id);
+        //list of disliked users without userData
+        const filteredDis = disliked.filter(el => el.Email !== userData.Email);
 
-        //item is in disliked(was previously disliked)
+        //user is in disliked(was previously disliked)
         if (filteredDis.length != disliked.length) {
 
-            var myqueryD = { UserName: userData.UserName };
-            var newvaluesD = { $set: { DisLiked: filteredDis ,Liked: liked } };
-            //updated User disliked array to have the item removed and liked array to have item added
-            delete itemData.Dislikes;
-            delete itemData.Likes;
-            delete itemData.Rating;
-            liked.push(itemData);
-            collection.updateOne(myqueryD, newvaluesD, function (err, res) {
-                if (err) throw err;
-    
-            });
-    
             
-        
+            //add user to liked array
+            liked.push(userData);
             //increment likes in Ratings DB
-            console.log(item.Dislikes);
             item.Likes++;
             //decrement dislikes in Rating DB
             item.Dislikes--;
@@ -293,30 +240,30 @@ likeItem: async function item_liked(client, userData, itemData) {
             }
             //update Rating DB
             var myquery2 = { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id };
-            var newvalues2 = { $set: { Likes: item.Likes, Dislikes: item.Dislikes, Rating: item.Rating } };
-            collection2.updateOne(myquery2, newvalues2, function (err, res) {
+            var newvalues2 = { $set: { Likes: item.Likes, Dislikes: item.Dislikes, Rating: item.Rating, Disliked: filteredDis ,Liked: liked } };
+            collection.updateOne(myquery2, newvalues2, function (err, res) {
                 if (err) throw err;
 
             });
+            //return item profile
+            const itemReturn =  await collection.findOne(
+
+            { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id  }
+
+
+            );
+            return itemReturn;
             
             
         
         }
+        //user has neither liked or disliked the item previously
         else{
 
-        delete itemData.Dislikes;
-        delete itemData.Likes;
-        delete itemData.Rating;
-        liked.push(itemData);
-        var myquery = { UserName: userData.UserName };
-        var newvalues = { $set: { Liked: liked } };
-        //update User array to have item in liked array
-        collection.updateOne(myquery, newvalues, function (err, res) {
-            if (err) throw err;
+         //update item array to have user in liked array
+        liked.push(userData);
 
-        });
         //increment likes in Ratings DB
-    
         item.Likes++;
         const total = item.Likes + item.Dislikes;
         //recalculate rating
@@ -331,19 +278,19 @@ likeItem: async function item_liked(client, userData, itemData) {
         }
         //update Rating DB
         var myquery2 = { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id };
-        var newvalues2 = { $set: { Likes: item.Likes, Dislikes: item.Dislikes, Rating: item.Rating } };
-        collection2.updateOne(myquery2, newvalues2, function (err, res) {
+        var newvalues2 = { $set: { Likes: item.Likes, Dislikes: item.Dislikes, Rating: item.Rating, Liked: liked } };
+        collection.updateOne(myquery2, newvalues2, function (err, res) {
             if (err) throw err;
 
         });
-        //return user profile
-        const user =  await collection.findOne(
+        //return item profile
+        const itemReturn =  await collection.findOne(
 
-            { UserName: userData.UserName }
+            { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id  }
 
 
         );
-        return user;
+        return itemReturn;
         }
     }
 
@@ -366,7 +313,9 @@ dislikeItem:  async function item_disliked(client, userData, itemData) {
             "Product_id": "0",
             "Store_id": 2845,
             "Availability": "IN_STOCK",
+            "Disliked": [],
             "Dislikes": "0",
+            "Liked": [],
             "Likes": "0",
             "Price": 25.99,
             "Product": "Bobbie Baby Organic Powder Infant Formula - 14oz",
@@ -379,48 +328,35 @@ dislikeItem:  async function item_disliked(client, userData, itemData) {
 
     */
 
-    const DB = client.db('Users');//connect to Users DB
-
-    const collection = await DB.collection('Users'); // or DB.createCollection(nameOfCollection); 
     
-    const DB2 = client.db('Ratings');//connect to Ratings DB
-
-    const collection2 = await DB2.collection('Ratings'); // or DB.createCollection(nameOfCollection); 
 
 
-    //get user profile
-    const user =  await collection.findOne(
+    
+        const DB2 = client.db('Ratings');//connect to Ratings DB
 
-        { Email: userData.Email }
-
-
-    );
-    //get liked item ratings profile
-    let item = await collection2.findOne(
-        { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id }
-
-    );
-    //get liked array from user profile
-    const liked = user.Liked;
-    //get disliked array from user profile
-    const disliked = user.DisLiked;
+        const collection = await DB2.collection('Ratings'); // or DB.createCollection(nameOfCollection); 
+    
+    
+        //get liked item ratings profile
+        let item = await collection.findOne(
+            { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id }
+    
+        );
+       
+        //get liked array from item profile
+        const liked = item.Liked;
         
-    //find if item that was disliked is in disliked array
-    const filtered = disliked.filter(el => el.Product_id !== itemData.Product_id
-        && el.Company !== itemData.Company && el.Store_id !== itemData.Store_id);
+        //get disliked array from item profile
+        const disliked = item.Disliked;
+        
+    //list of disliked users without userData
+    const filtered = disliked.filter(el => el.Email !== userData.Email);
+    
 
 
     //item is in disliked(was previously disliked)
     if (filtered.length != disliked.length) {
-        var myquery = { UserName: userData.UserName };
-        var newvalues = { $set: { DisLiked: filtered } };
-        //updated User liked array to have the item removed
         
-        collection.updateOne(myquery, newvalues, function (err, res) {
-            if (err) throw err;
-
-        });
-
         //decrement dislikes in Rating DB
         item.Dislikes--;
         const total = item.Likes + item.Dislikes;
@@ -438,45 +374,35 @@ dislikeItem:  async function item_disliked(client, userData, itemData) {
         
         //update entry in Rating DB
         var myquery2 = { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id };
-        var newvalues2 = { $set: { Dislikes: item.Dislikes, Rating: item.Rating } };
-        collection2.updateOne(myquery2, newvalues2, function (err, res) {
+        var newvalues2 = { $set: { Dislikes: item.Dislikes, Rating: item.Rating, Disliked: filtered  } };
+        collection.updateOne(myquery2, newvalues2, function (err, res) {
             if (err) throw err;
 
         });
-        //return user profile
-        const user =  await collection.findOne(
+        //return item profile
+        const itemReturn =  await collection.findOne(
 
-            { UserName: userData.UserName }
+            { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id }
 
 
         );
-        return user;
+        return itemReturn;
     
     }
     //item is not in disliked array(not previously disliked)
     else {
 
-        
-        const filteredDis = liked.filter(el => el.Product_id !== itemData.Product_id
-            && el.Company !== itemData.Company && el.Store_id !== itemData.Store_id);
+        //liked array without userData
+        const filteredDis = liked.filter(el => el.Email !== userData.Email);
 
-        //item is in liked(was previously liked)
+        //user is in liked(was previously liked)
         if (filteredDis.length != liked.length) {
 
-            var myqueryD = { UserName: userData.UserName };
-            var newvaluesD = { $set: { Liked: filteredDis ,DisLiked: disliked } };
-            //updated User disliked array to have the item removed and liked array to have item added
-            delete itemData.Dislikes;
-            delete itemData.Likes;
-            delete itemData.Rating;
-            disliked.push(itemData);
-            collection.updateOne(myqueryD, newvaluesD, function (err, res) {
-                if (err) throw err;
-    
-            });
-    
             
-        
+
+            //add userData to disliked array
+            disliked.push(userData);
+            
             //increment dislikes in Ratings DB
             item.Dislikes++;
             //decrement Likes in Rating DB
@@ -494,28 +420,28 @@ dislikeItem:  async function item_disliked(client, userData, itemData) {
             }
             //update Rating DB
             var myquery2 = { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id };
-            var newvalues2 = { $set: { Likes: item.Likes, Dislikes: item.Dislikes, Rating: item.Rating } };
-            collection2.updateOne(myquery2, newvalues2, function (err, res) {
+            var newvalues2 = { $set: { Likes: item.Likes, Dislikes: item.Dislikes, Rating: item.Rating, Liked: filteredDis ,Disliked: disliked} };
+            collection.updateOne(myquery2, newvalues2, function (err, res) {
                 if (err) throw err;
 
             });
             
-            
+            //return item profile
+            const itemReturn =  await collection.findOne(
+
+            { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id }
+
+
+            );
+            return itemReturn;
+    
         
         }
         else{
             
-        delete itemData.Dislikes;
-        delete itemData.Likes;
-        delete itemData.Rating;
-        disliked.push(itemData);
-        var myquery = { UserName: userData.UserName };
-        var newvalues = { $set: { DisLiked: disliked } };
-        //update User array to have item in disliked array
-        collection.updateOne(myquery, newvalues, function (err, res) {
-            if (err) throw err;
-
-        });
+        //add userData to disliked array
+        disliked.push(userData);
+        
         //increment dislikes in Ratings DB
       
         item.Dislikes++;
@@ -532,19 +458,19 @@ dislikeItem:  async function item_disliked(client, userData, itemData) {
         }
         //update Rating DB
         var myquery2 = { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id };
-        var newvalues2 = { $set: { Likes: item.Likes, Dislikes: item.Dislikes, Rating: item.Rating } };
-        collection2.updateOne(myquery2, newvalues2, function (err, res) {
+        var newvalues2 = { $set: { Likes: item.Likes, Dislikes: item.Dislikes, Rating: item.Rating, Disliked: disliked } };
+        collection.updateOne(myquery2, newvalues2, function (err, res) {
             if (err) throw err;
 
         });
-        //return user profile
-        const user =  await collection.findOne(
+        //return item profile
+        const itemReturn =  await collection.findOne(
 
-            { UserName: userData.UserName }
+            { Company: itemData.Company, Store_id: itemData.Store_id, Product_id: itemData.Product_id }
 
 
-        );
-        return user;
+            );
+            return itemReturn;
         }
     }
 

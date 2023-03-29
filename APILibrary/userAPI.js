@@ -27,10 +27,6 @@ module.exports =
         if (emailExists == 0) { 
             //add permissions field
             userData.Permission = "User";
-            //add liked items field
-            userData.Liked = [];
-            // add disliked items field
-            userData.DisLiked = [];
             // insert into DB
             await collection.insert(userData);
             //return the created user profile

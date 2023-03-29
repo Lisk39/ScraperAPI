@@ -51,16 +51,16 @@ router.patch('/itemliked', async function(req, res, next) {
     const user = req.body[0];
     const item = req.body[1];
 
-    
-     
+    let userupdated = await gateMethods.likeItem(client, user , item);
+    res.json(userupdated);
+     /*
      try{
-       let userupdated = await gateMethods.likeItem(client, user , item);
-       res.json(userupdated);
+      
      }
      catch(err){
        res.status(400).json({message: err.message});
      }
-     
+     */
    });
 /* PATCH item DisLiked */
 /* Jsons user and item need to be collected in to an array in one json which is passed to this API*/
@@ -70,15 +70,16 @@ router.patch('/itemdisliked', async function(req, res, next) {
     const item = req.body[1];
 
     
-     
+    let userupdated = await gateMethods.dislikeItem(client, user , item);
+    res.json(userupdated);
+    /*
      try{
-       let userupdated = await gateMethods.dislikeItem(client, user , item);
-       res.json(userupdated);
+       
      }
      catch(err){
        res.status(400).json({message: err.message});
      }
-     
+     */
    });
 
 

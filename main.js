@@ -23,7 +23,7 @@ var app = express();
 
 
 //used for testing the API functions
-/*
+
 let ScraperDataRaw = fs.readFileSync((path.resolve('./TestData', 'ratingstest2.json')));
 let Userdataraw = fs.readFileSync((path.resolve('./TestData', 'TestUser2.json')));
 let itemdataRaw = fs.readFileSync((path.resolve('./TestData', 'iteminfo.json')));
@@ -32,7 +32,7 @@ let scraperdata = JSON.parse(ScraperDataRaw);
 let userdata = JSON.parse(Userdataraw);
 let itemdata = JSON.parse(itemdataRaw);
 let loginData = JSON.parse(loginRaw);
-*/
+
 
 async function main() {
     
@@ -71,31 +71,33 @@ async function main() {
         const gatewayRouter = require('./routes/gateway')
         app.use('/gateway', gatewayRouter)
 
-        app.listen(8080);
-        console.log("listening on port 8080");
+        app.listen(process.env.PORT);
+        console.log("listening on "+ process.env.PORT);
 
-        
+       
 
         // Tests for the API functions
 /*
+        var client = dbAPI.client;
 
         //await gateway.list(client);
-        //await gateway.addDataScrap(client, scraperdata);
+        await gateway.addDataScrap(client, scraperdata);
         //await gateway.addUser(client, userdata);
         //await gateway.likeItem(client, userdata, itemdata);
         //await gateway.dislikeItem(client, userdata, itemdata);
 
         //let testGuy = await gateway.verifyEmail(client, loginData);
-        //let testData = await gateway.getData(client);
+        let testData = await gateway.getData(client);
 
         app.get('/', function (req, res) {
        
             //console.log(req.session);
             //req.session.isAuth = true;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify(testGuy, null, 3));
+            res.end(JSON.stringify(testData, null, 3));
             
         });
+        app.listen(8080);
         
 */
     } catch (e) {
