@@ -23,7 +23,7 @@ var app = express();
 
 
 //used for testing the API functions
-
+/*
 let ScraperDataRaw = fs.readFileSync((path.resolve('./TestData', 'ratingstest2.json')));
 let Userdataraw = fs.readFileSync((path.resolve('./TestData', 'TestUser2.json')));
 let itemdataRaw = fs.readFileSync((path.resolve('./TestData', 'iteminfo.json')));
@@ -32,7 +32,7 @@ let scraperdata = JSON.parse(ScraperDataRaw);
 let userdata = JSON.parse(Userdataraw);
 let itemdata = JSON.parse(itemdataRaw);
 let loginData = JSON.parse(loginRaw);
-
+*/
 
 async function main() {
     
@@ -61,6 +61,13 @@ async function main() {
             ));
 
 
+
+        app.use(function(req, res, next) {
+            res.header("Access-Control-Allow-Credentials", true);
+            res.header("Access-Control-Allow-Origin", process.env.CORS_FRONTEND_URL);
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            next();
+            });
 
         app.use(express.json())
 
